@@ -32,7 +32,14 @@ Follow these steps to get the application running locally for development and te
 -   **`GEMINI_API_KEY`**: The backend agent requires a Google Gemini API key.
     1.  Navigate to the `backend/` directory.
     2.  Create a file named `.env` by copying the `backend/.env.example` file.
-    3.  Open the `.env` file and add your Gemini API key: `GEMINI_API_KEY="YOUR_ACTUAL_API_KEY"`
+    3.  Open the `.env` file and add your Gemini API key: `GEMINI_API_KEY="YOUR_ACTUAL_API_KEY"`.
+       To use OpenAI models, also set:
+
+       ```
+       LLM_PROVIDER=openai
+       OPENAI_API_KEY=<your_openai_api_key>
+       # OPENAI_API_BASE=<custom_api_base>
+       ```
 
 **2. Install Dependencies:**
 
@@ -90,7 +97,9 @@ _Note: If you are not running the docker-compose.yml example or exposing the bac
 **2. Run the Production Server:**
 
    ```bash
-   GEMINI_API_KEY=<your_gemini_api_key> LANGSMITH_API_KEY=<your_langsmith_api_key> docker-compose up
+   GEMINI_API_KEY=<your_gemini_api_key> \
+   LLM_PROVIDER=openai OPENAI_API_KEY=<your_openai_api_key> \
+   LANGSMITH_API_KEY=<your_langsmith_api_key> docker-compose up
    ```
 
 Open your browser and navigate to `http://localhost:8123/app/` to see the application. The API will be available at `http://localhost:8123`.
