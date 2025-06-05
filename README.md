@@ -41,6 +41,10 @@ Follow these steps to get the application running locally for development and te
        # OPENAI_API_BASE=<custom_api_base>
        ```
 
+       The model dropdown in the UI includes Gemini models as well as
+       a **DeepSeek (OpenAI)** option. Select this option to use the
+       `deepseek-chat` model via an OpenAI-compatible API.
+
 **2. Install Dependencies:**
 
 **Backend:**
