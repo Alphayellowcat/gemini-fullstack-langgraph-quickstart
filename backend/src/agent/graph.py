@@ -24,6 +24,7 @@ from agent.prompts import (
     answer_instructions,
 )
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from agent.utils import (
     get_citations,
     get_research_topic,
@@ -38,6 +39,24 @@ if os.getenv("GEMINI_API_KEY") is None:
 
 # Used for Google Search API
 genai_client = Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+def _get_chat_model(config: Configuration, model: str, temperature: float):
+    """Return a chat model instance based on the configured provider."""
+    if config.llm_provider == "openai":
+        return ChatOpenAI(
+            model=model,
+            temperature=temperature,
+            max_retries=2,
+            openai_api_key=config.openai_api_key,
+            openai_api_base=config.openai_api_base,
+        )
+    return ChatGoogleGenerativeAI(
+        model=model,
+        temperature=temperature,
+        max_retries=2,
+        api_key=os.getenv("GEMINI_API_KEY"),
+    )
 
 
 # Nodes
@@ -60,12 +79,10 @@ def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerati
     if state.get("initial_search_query_count") is None:
         state["initial_search_query_count"] = configurable.number_of_initial_queries
 
-    # init Gemini 2.0 Flash
-    llm = ChatGoogleGenerativeAI(
-        model=configurable.query_generator_model,
+    llm = _get_chat_model(
+        configurable,
+        configurable.query_generator_model,
         temperature=1.0,
-        max_retries=2,
-        api_key=os.getenv("GEMINI_API_KEY"),
     )
     structured_llm = llm.with_structured_output(SearchQueryList)
 
@@ -162,12 +179,10 @@ def reflection(state: OverallState, config: RunnableConfig) -> ReflectionState:
         research_topic=get_research_topic(state["messages"]),
         summaries="\n\n---\n\n".join(state["web_research_result"]),
     )
-    # init Reasoning Model
-    llm = ChatGoogleGenerativeAI(
-        model=reasoning_model,
+    llm = _get_chat_model(
+        configurable,
+        reasoning_model,
         temperature=1.0,
-        max_retries=2,
-        api_key=os.getenv("GEMINI_API_KEY"),
     )
     result = llm.with_structured_output(Reflection).invoke(formatted_prompt)
 
@@ -241,12 +256,10 @@ def finalize_answer(state: OverallState, config: RunnableConfig):
         summaries="\n---\n\n".join(state["web_research_result"]),
     )
 
-    # init Reasoning Model, default to Gemini 2.5 Flash
-    llm = ChatGoogleGenerativeAI(
-        model=reasoning_model,
+    llm = _get_chat_model(
+        configurable,
+        reasoning_model,
         temperature=0,
-        max_retries=2,
-        api_key=os.getenv("GEMINI_API_KEY"),
     )
     result = llm.invoke(formatted_prompt)
 

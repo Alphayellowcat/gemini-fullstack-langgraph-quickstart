@@ -8,6 +8,11 @@ from langchain_core.runnables import RunnableConfig
 class Configuration(BaseModel):
     """The configuration for the agent."""
 
+    llm_provider: str = Field(
+        default="google",
+        metadata={"description": "LLM provider to use ('google' or 'openai')."},
+    )
+
     query_generator_model: str = Field(
         default="gemini-2.0-flash",
         metadata={
@@ -27,6 +32,16 @@ class Configuration(BaseModel):
         metadata={
             "description": "The name of the language model to use for the agent's answer."
         },
+    )
+
+    openai_api_key: Optional[str] = Field(
+        default=None,
+        metadata={"description": "OpenAI API key."},
+    )
+
+    openai_api_base: Optional[str] = Field(
+        default=None,
+        metadata={"description": "Custom OpenAI API base URL."},
     )
 
     number_of_initial_queries: int = Field(
